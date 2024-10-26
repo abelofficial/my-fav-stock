@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "my-fav-stocks"
+resolve_s3 = true
+s3_prefix = "my-fav-stocks"
+region = "eu-north-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM CAPABILITY_IAM"
+parameter_overrides = "StackName=\"sam-my-fav-stocks-cars-back\" Stage=\"workstation\" OpenSearchDomainEndpoint=\"workstation\""
+image_repositories = []

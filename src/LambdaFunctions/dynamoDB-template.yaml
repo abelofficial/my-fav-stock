@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: >
+    Sub template for DynamoDB Tables
+Resources:
+    myFavStocksCacheTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            TableName: my-fav-stocks-cache
+            BillingMode: PAY_PER_REQUEST
+            AttributeDefinitions:
+                - AttributeName: CacheKey
+                  AttributeType: S
+                - AttributeName: RangeKey
+                  AttributeType: S
+            KeySchema:
+                - AttributeName: CacheKey
+                  KeyType: HASH
+            GlobalSecondaryIndexes:
+                - IndexName: rangeKey-index
+                  KeySchema:
+                      - AttributeName: RangeKey
+                        KeyType: HASH
+                  Projection:
+                      ProjectionType: ALL
+            PointInTimeRecoverySpecification:
+                PointInTimeRecoveryEnabled: true
+            TimeToLiveSpecification:
+                AttributeName: "ExpireAt"
+                Enabled: true
+
+Outputs:
+    MyFavStocksCacheTableArn:
+        Description: "Cache Table ARN"
+        Value: !GetAtt myFavStocksCacheTable.Arn

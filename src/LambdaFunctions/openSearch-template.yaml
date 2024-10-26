@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    OpenSearch Domain for My Fav Stocks
+
+Parameters:
+    Stage:
+        Type: String
+        Description: Deployment stage (e.g., dev, staging, prod)
+        Default: workstation
+
+    DomainName:
+        Type: String
+        Default: "my-fav-stocks"
+        Description: OpenSearch Domain Name
+
+    SecretManagerName:
+        Type: String
+        Default: "myyFavStocks/aws/service/OpenSearch"
+        Description: SecretsManager name for OpenSearch credentials
+
+Mappings:
+    InstanceTypeMapping:
+        global:
+            workstation: "t3.medium.search"
+
+Resources:
+#     OpenSearchDomain:
+#         Type: AWS::OpenSearchService::Domain
+#         Properties:
+#             DomainName: !Sub "${AWS::StackName}-${Stage}-os"
+#             EngineVersion: "OpenSearch_2.11"
+#             ClusterConfig:
+#                 InstanceCount: 1 # Adjust as needed
+#                 InstanceType:
+#                     !FindInMap [InstanceTypeMapping, global, !Ref Stage]
+#             EBSOptions:
+#                 EBSEnabled: true
+#                 VolumeSize: 20
+#                 VolumeType: "gp3"
+#             AccessPolicies:
+#                 Version: "2012-10-17"
+#                 Statement:
+#                     - Effect: "Allow"
+#                       Principal:
+#                           AWS: "*"
+#                       Action: "es:ESHttp*"
+#                       Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*"
+#             AdvancedOptions:
+#                 rest.action.multi.allow_explicit_index: true
+#                 indices.query.bool.max_clause_count: 4004
+#             AdvancedSecurityOptions:
+#                 Enabled: true
+#                 InternalUserDatabaseEnabled: true
+#                 MasterUserOptions:
+#                     MasterUserName: !Sub "{{resolve:secretsmanager:${SecretManagerName}:SecretString:username}}"
+#                     MasterUserPassword: !Sub "{{resolve:secretsmanager:${SecretManagerName}:SecretString:password}}"
+#             EncryptionAtRestOptions:
+#                 Enabled: true
+#             NodeToNodeEncryptionOptions:
+#                 Enabled: true
+#             DomainEndpointOptions:
+#                 EnforceHTTPS: true
+
+# Outputs:
+#     DomainEndpoint:
+#         Value: !GetAtt OpenSearchDomain.DomainEndpoint
+#         Export:
+#             Name: !Sub "${AWS::StackName}-DomainEndpoint"

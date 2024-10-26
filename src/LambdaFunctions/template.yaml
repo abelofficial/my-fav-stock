@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    My fav stocks
+Parameters:
+    StackName:
+        Type: String
+        Description: The name of the CloudFormation stack.
+        Default: "sam-my-fav-stocks-cars-back"
+    Stage:
+        Type: String
+        Description: The stage name.
+        Default: "workstation"
+
+Resources:
+    DynamoDBStack:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: "./dynamoDB-template.yaml"
+
+    LambdaStack:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: "./lambda-template.yaml"
+            Parameters:
+                StackName: !Ref StackName
+                Stage: !Ref Stage
+                MyFavStocksCacheTableArn: !GetAtt DynamoDBStack.Outputs.MyFavStocksCacheTableArn

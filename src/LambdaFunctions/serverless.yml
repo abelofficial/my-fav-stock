@@ -1,0 +1,53 @@
+service: booking-service
+
+provider:
+    name: aws
+    runtime: dotnet6
+    region: eu-north-1
+    environment:
+        STAGE: ${self:custom.stage}
+
+custom:
+    stage: ${opt:stage, 'dev'}
+    region: eu-north-1
+
+package:
+    artifact: bin/release/net6.0/LambdaFunctions.zip
+
+functions:
+    scrapStockValues:
+        handler: LambdaFunctions::LambdaFunctions.Functions.StockScraperFunc::ScrapStockValues
+        iamRoleStatementsInherit: true
+        iamRoleStatementsName: sayHello-lambda-access-${self.custom.stage}
+        iamRoleStatements:
+            - Effect: "Allow"
+              Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+              Resources:
+                  - "arn:aws:dynamodb:${self.custom.region}:*:table/helloTable-${self:custom.stage}"
+        events:
+            - schedule: cron(0/5 * * * ? *)
+
+resources:
+    Resources:
+        HelloTable:
+            Type: AWS::DynamoDB::Table
+            Properties:
+                TableName: helloTable-${self:custom.stage}
+                BillingMode: PAY_PER_REQUEST
+                AttributeDefinitions:
+                    - AttributeName: Id
+                      AttributeType: S
+                    - AttributeName: RangeKey
+                      AttributeType: S
+                KeySchema:
+                    - AttributeName: Id
+                      KeyType: HASH
+                GlobalSecondaryIndexes:
+                    - IndexName: RangeKeyIndex
+                      KeySchema:
+                          - AttributeName: RangeKey
+                            KeyType: HASH
+                      Projection:
+                          ProjectionType: ALL

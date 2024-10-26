@@ -1,0 +1,17 @@
+{
+    "name": "booking-service",
+    "keywords": [],
+    "author": "Abel Sintaro",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "deploy:dev": "yarn build && sls deploy --stage dev",
+        "build": "dotnet lambda package --configuration Debug --framework net6.0 --output-package bin/release/net6.0/LambdaFunctions.zip",
+        "deploy": "yarn build && sam deploy --stack-name my-fav-stocks --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM CAPABILITY_IAM --resolve-s3 --no-confirm-changeset --no-fail-on-empty-changeset --parameter-overrides Stage=workstation",
+        "deploy:guided": "yarn build && sam deploy --guided --stack-name my-fav-stocks --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM CAPABILITY_IAM --resolve-s3 --no-confirm-changeset --no-fail-on-empty-changeset --parameter-overrides Stage=workstation"
+    },
+    "dependencies": {
+        "serverless": "^3.4.0",
+        "serverless-appsync-plugin": "^2.2.0"
+    }
+}
