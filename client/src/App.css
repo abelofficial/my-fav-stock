@@ -9,6 +9,7 @@
     margin: 20px 0;
     font-size: 1em;
     text-align: left;
+    overflow-x: auto;
 }
 
 .company-table th,
@@ -69,10 +70,12 @@ button:hover {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    max-width: 600px;
+    max-width: 90%;
     width: 100%;
     animation: fadeIn 0.3s ease-in-out;
     z-index: 1000;
+    overflow-y: auto;
+    padding: 1rem;
 }
 
 .overlay {
@@ -102,9 +105,6 @@ button:hover {
     background-color: #d93636;
 }
 
-li {
-    padding: 1rem 1rem;
-}
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -122,5 +122,36 @@ li {
     }
     to {
         opacity: 1;
+    }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .company-table th,
+    .company-table td {
+        font-size: 0.9em;
+        padding: 6px;
+    }
+
+    .company-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .modal {
+        max-width: 95%;
+        width: 95%;
+        padding: 15px;
+    }
+
+    button {
+        padding: 4px 8px;
+        font-size: 0.9em;
+    }
+
+    .pagination button {
+        margin: 2px;
+        padding: 4px 8px;
     }
 }

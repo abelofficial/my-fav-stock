@@ -1,6 +1,8 @@
 using System;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Application.CQRS;
 using Application.Results;
@@ -27,15 +29,16 @@ public abstract class BaseFunctions
         _mediator = _serviceProvider.GetService<IMediator>();
     }
 
-    protected async Task<Response<TResponse>> HandleResponse<TRequest, TResponse>(TRequest request, ILambdaContext context, Func<TRequest, Task<TResponse>> lambdaFunction)
+    protected async Task<Response<TResponse>> HandleResponse<TRequest, TResponse>(APIGatewayHttpApiV2ProxyRequest request, ILambdaContext context, Func<string, Task<TResponse>> lambdaFunction)
     where TResponse : IResponse
     where TRequest : IRequest
     {
         try
         {
             Log.Information("Processing request: {@Request}", request);
-            var result = await lambdaFunction(request);
-            Log.Debug("Generated response successfully: {@Result}", result);
+            request.PathParameters.TryGetValue("Symbol", out string symbol);
+            var result = await lambdaFunction(symbol);
+            Log.Information("Generated response successfully: {@Result}", result);
             return new Response<TResponse> { Data = result, Error = null };
         }
         catch (Exception error)

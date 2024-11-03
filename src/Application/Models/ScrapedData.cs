@@ -2,6 +2,7 @@ using System.Globalization;
 using Application.models;
 using Application.Models;
 using Domain.Entity;
+using Domain.models;
 using Domain.Models;
 using Domain.Utils;
 
@@ -27,10 +28,6 @@ public class ScrapedData
     {
         get; set;
     }
-    public Dictionary<string, string> ScrapedPriceData
-    {
-        get; set;
-    }
 
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
@@ -40,6 +37,7 @@ public class ScrapedData
 
         stock.Name = Name;
         stock.CreatedAt = UpdatedAt;
+        stock.Articles = Articles;
         if (StockType == StockType.Index)
         {
             stock.IndexDetail = new();
@@ -227,6 +225,21 @@ public class ScrapItem
     {
         get; set;
     }
+
+
+}
+
+public class StockEntryType
+{
+    public StockType Value
+    {
+        get => (StockType)Enum.Parse(typeof(StockType), this.TypeValue);
+    }
+
+    public string TypeValue
+    {
+        get; set;
+    }
 }
 
 public abstract class BaseScrapField
@@ -349,4 +362,40 @@ public enum FieldType
     Date,
     DateRange,
     Text
+}
+
+public class CompanyData
+{
+    public int Rank
+    {
+        get; set;
+    }
+    public string CompanyName
+    {
+        get; set;
+    }
+    public string Symbol
+    {
+        get; set;
+    }
+    public decimal Weight
+    {
+        get; set;
+    }
+    public decimal Price
+    {
+        get; set;
+    }
+    public decimal Change
+    {
+        get; set;
+    }
+    public decimal PercentageChange
+    {
+        get; set;
+    }
+    public DateTime UpdatedAt
+    {
+        get; set;
+    }
 }

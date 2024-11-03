@@ -32,9 +32,6 @@ public class DatoCmsService : ICmsService
                             name
                             symbol
                         }
-                        stockType{
-                            typeValue
-                        }
                     }
                 }"
         };
@@ -43,7 +40,7 @@ public class DatoCmsService : ICmsService
         request.Content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _settings.Token);
 
-        Log.Information("Dato request: {@Request}", request);
+        Log.Information($"Dato request: {request}");
         var response = await _httpClient.SendAsync(request);
 
         if (response.IsSuccessStatusCode)

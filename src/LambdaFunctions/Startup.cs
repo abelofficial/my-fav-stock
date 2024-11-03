@@ -8,7 +8,7 @@ namespace LambdaFunctions;
 
 public class Startup
 {
-    private static bool IsLocale = false;
+    private static bool IsLocale = true;
     public static IConfigurationRoot BuildConfiguration()
     {
         return new ConfigurationBuilder()

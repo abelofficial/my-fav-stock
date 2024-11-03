@@ -1,28 +1,124 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: >
-    My fav stocks
 Parameters:
-    StackName:
+    StageName:
         Type: String
-        Description: The name of the CloudFormation stack.
-        Default: "sam-my-fav-stocks-cars-back"
-    Stage:
-        Type: String
-        Description: The stage name.
-        Default: "workstation"
+        Default: workstation
 
 Resources:
-    DynamoDBStack:
-        Type: AWS::CloudFormation::Stack
+    myFavStocksCacheTable:
+        Type: AWS::DynamoDB::Table
         Properties:
-            TemplateURL: "./dynamoDB-template.yaml"
+            TableName: my-fav-stocks-cache
+            BillingMode: PAY_PER_REQUEST
+            AttributeDefinitions:
+                - AttributeName: CacheKey
+                  AttributeType: S
+                - AttributeName: RangeKey
+                  AttributeType: S
+            KeySchema:
+                - AttributeName: CacheKey
+                  KeyType: HASH
+            GlobalSecondaryIndexes:
+                - IndexName: rangeKey-index
+                  KeySchema:
+                      - AttributeName: RangeKey
+                        KeyType: HASH
+                  Projection:
+                      ProjectionType: ALL
+            PointInTimeRecoverySpecification:
+                PointInTimeRecoveryEnabled: true
+            TimeToLiveSpecification:
+                AttributeName: "ExpireAt"
+                Enabled: true
 
-    LambdaStack:
-        Type: AWS::CloudFormation::Stack
+    ScrapStockValues:
+        Type: AWS::Serverless::Function
         Properties:
-            TemplateURL: "./lambda-template.yaml"
-            Parameters:
-                StackName: !Ref StackName
-                Stage: !Ref Stage
-                MyFavStocksCacheTableArn: !GetAtt DynamoDBStack.Outputs.MyFavStocksCacheTableArn
+            Handler: LambdaFunctions::LambdaFunctions.Functions.StockScraperFunc::ScrapStockValues
+            CodeUri: bin/release/net6.0/LambdaFunctions.zip
+            Runtime: dotnet6
+            MemorySize: 2048
+            Timeout: 60
+            Role: !GetAtt CommonRole.Arn
+            Events:
+                ExplicitApi:
+                    Type: HttpApi
+                    Properties:
+                        ApiId: !Ref StockApi
+                        Method: GET
+                        Path: /scrapStockValues/{Symbol}
+                        TimeoutInMillis: 15000
+    ScrapIndexStocks:
+        Type: AWS::Serverless::Function
+        Properties:
+            Handler: LambdaFunctions::LambdaFunctions.Functions.StockScraperFunc::ScrapIndexStocks
+            CodeUri: bin/release/net6.0/LambdaFunctions.zip
+            Runtime: dotnet6
+            MemorySize: 2048
+            Timeout: 60
+            Role: !GetAtt CommonRole.Arn
+            Events:
+                ExplicitApi:
+                    Type: HttpApi
+                    Properties:
+                        ApiId: !Ref StockApi
+                        Method: GET
+                        Path: /scrapIndexStocks/{Symbol}
+                        TimeoutInMillis: 15000
+
+    StockApi:
+        Type: AWS::Serverless::HttpApi
+        Properties:
+            StageName: !Ref StageName
+            Tags:
+                Tag: Value
+            CorsConfiguration:
+                AllowOrigins:
+                    - "*"
+                AllowMethods:
+                    - GET
+                AllowHeaders:
+                    - "*"
+                AllowCredentials: false
+
+    CommonRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: !Sub "${StageName}-CommonRole"
+            AssumeRolePolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service: lambda.amazonaws.com
+                      Action: sts:AssumeRole
+            Policies:
+                - PolicyName: LambdaLogPolicy
+                  PolicyDocument:
+                      Version: "2012-10-17"
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - logs:CreateLogGroup
+                                - logs:CreateLogStream
+                                - logs:PutLogEvents
+                            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*:*"
+                - PolicyName: LambdaDynamodbPolicy
+                  PolicyDocument:
+                      Version: "2012-10-17"
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - dynamodb:DescribeTable
+                                - dynamodb:DescribeTable
+                                - dynamodb:GetItem
+                                - dynamodb:GetRecords
+                                - dynamodb:ListTables
+                                - dynamodb:Query
+                                - dynamodb:UpdateItem
+                                - dynamodb:PutItem
+                            Resource: !GetAtt myFavStocksCacheTable.Arn
+
+    AccessLogs:
+        Type: AWS::Logs::LogGroup

@@ -1,0 +1,9 @@
+{
+    "Rank": "Int",
+    "CompanyName": "String",
+    "Symbol": "String",
+    "Weight": "Decimal",
+    "Price": "Decimal",
+    "Change": "Decimal",
+    "PercentageChange": "Decimal"
+}

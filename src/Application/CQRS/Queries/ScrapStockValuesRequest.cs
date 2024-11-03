@@ -6,7 +6,7 @@ namespace Application.Queries;
 
 public class ScrapStockValuesRequest : IRequest, ICQRSRequest
 {
-    public string Name
+    public string Symbol
     {
         get;
         set;

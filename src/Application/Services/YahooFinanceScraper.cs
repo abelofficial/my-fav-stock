@@ -1,5 +1,6 @@
 using Application.Contracts;
 using Application.models;
+using Domain.models;
 using Domain.Models;
 using Domain.Utils;
 using HtmlAgilityPack;
@@ -7,7 +8,7 @@ using Serilog;
 
 namespace Application.Services;
 
-public interface IStockScraper
+public interface IYahooFinanceScraper
 {
     public string BaseUrl
     {
@@ -18,7 +19,7 @@ public interface IStockScraper
     Task<Dictionary<string, string>> ScrapeQuoteStatisticsAsync();
     Task<ScrapedData> ScrapeNewsArticlesAsync(StockType value, List<ScrapItem> scrapItems);
 }
-public class StockScraper : IStockScraper
+public class YahooFinanceScraper : IYahooFinanceScraper
 {
     private readonly HttpClient _httpClient;
     private readonly ICmsService _cmsService;
@@ -29,7 +30,7 @@ public class StockScraper : IStockScraper
     }
 
 
-    public StockScraper(StockScraperOptions stockScraperOptions, ICmsService cmsService)
+    public YahooFinanceScraper(StockScraperOptions stockScraperOptions, ICmsService cmsService)
     {
         _cmsService = cmsService;
         _httpClient = new HttpClient(new HttpClientHandler
@@ -54,7 +55,6 @@ public class StockScraper : IStockScraper
             return new ScrapedData()
             {
                 Articles = ScrapNewArticles(htmlDocument),
-                ScrapedPriceData = scrapedPriceData,
                 PriceData = priceData
             };
         }

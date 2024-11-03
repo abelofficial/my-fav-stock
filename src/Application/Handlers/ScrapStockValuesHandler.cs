@@ -2,6 +2,7 @@ using Application.Contracts;
 using Application.Queries;
 using Application.Results;
 using Application.Services;
+using Domain.Models;
 using MediatR;
 
 namespace Application.Handlers;
@@ -9,34 +10,55 @@ namespace Application.Handlers;
 public class ScrapStockValuesHandler : IRequestHandler<ScrapStockValuesRequest, ScrapStockValuesResponse>
 {
     private readonly ICmsService _cms;
-    private readonly IStockScraper _stockScraper;
-    // private readonly IElasticDataConsumer _elasticDataConsumer;
-    private readonly IStockBucket _bucket;
-    public ScrapStockValuesHandler(ICmsService cms, IStockScraper stockScraper, IStockBucket bucket)
+    private readonly IYahooFinanceScraper _stockScraper;
+    private readonly IStockApi _stockApi;
+    private readonly ICache _cache;
+    public ScrapStockValuesHandler(ICmsService cms, IYahooFinanceScraper stockScraper, ICache cache, IStockApi stockApi)
     {
         _cms = cms;
         _stockScraper = stockScraper;
-        _bucket = bucket;
+        _cache = cache;
+        _stockApi = stockApi;
     }
 
     public async Task<ScrapStockValuesResponse> Handle(ScrapStockValuesRequest request, CancellationToken cancellationToken)
     {
-        var stockEntries = await _cms.GetStockEntries();
-        var scrapItems = await _cms.GetScrapItems();
+        var scrapItems = await GetScrapItems();
         var response = new ScrapStockValuesResponse();
 
-        foreach (var stockEntry in stockEntries)
+        var result = await GetScrapeNewsArticles(new FetchStockDataRequest()
         {
-            _stockScraper.BaseUrl = stockEntry.Url.ToString();
-            var result = await _stockScraper.ScrapeNewsArticlesAsync(stockEntry.StockType.Value, scrapItems);
-            result.Name = stockEntry.FullName;
-            result.StockType = stockEntry.StockType.Value;
-            response.Result.Add(result);
-            var temp = result.MapToStockData();
-            await _bucket.AddStockEntry(temp);
-
-        }
+            ScrapItems = scrapItems,
+            Symbol = request.Symbol,
+            From = DateTime.Now.AddHours(-48),
+            To = DateTime.Now.AddHours(-24),
+        });
+        result.Name = result.Name;
+        result.StockType = StockType.Option;
+        response.Result.Add(result.MapToStockData());
 
         return response;
+    }
+
+    private async Task<List<ScrapItem>> GetScrapItems()
+    {
+        var key = "ScrapItem";
+        var cacheRepository = await _cache.Get<List<ScrapItem>>(key);
+
+        if (cacheRepository != null)
+            return cacheRepository;
+
+        return await _cache.Add<List<ScrapItem>>(key, await _cms.GetScrapItems(), 1440);
+    }
+
+    private async Task<ScrapedData> GetScrapeNewsArticles(FetchStockDataRequest request)
+    {
+        var key = $"ScrapedData-{request.Symbol}";
+        var cacheRepository = await _cache.Get<ScrapedData>(key);
+
+        if (cacheRepository != null)
+            return cacheRepository;
+
+        return await _cache.Add<ScrapedData>(key, await _stockApi.FetchStockDataAsync(request), 1440);
     }
 }

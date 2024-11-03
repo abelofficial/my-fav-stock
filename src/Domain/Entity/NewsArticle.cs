@@ -1,4 +1,4 @@
-namespace Application.models;
+namespace Domain.models;
 
 public class NewsArticle
 {

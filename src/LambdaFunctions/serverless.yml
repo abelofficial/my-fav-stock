@@ -28,6 +28,19 @@ functions:
                   - "arn:aws:dynamodb:${self.custom.region}:*:table/helloTable-${self:custom.stage}"
         events:
             - schedule: cron(0/5 * * * ? *)
+    scrapIndexStocks:
+        handler: LambdaFunctions::LambdaFunctions.Functions.StockScraperFunc::ScrapIndexStocks
+        iamRoleStatementsInherit: true
+        iamRoleStatementsName: sayHello-lambda-access-${self.custom.stage}
+        iamRoleStatements:
+            - Effect: "Allow"
+              Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+              Resources:
+                  - "arn:aws:dynamodb:${self.custom.region}:*:table/helloTable-${self:custom.stage}"
+        events:
+            - schedule: cron(0/5 * * * ? *)
 
 resources:
     Resources:

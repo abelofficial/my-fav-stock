@@ -12,7 +12,9 @@ public class Installer : IExtensionsInstaller
 {
     public void InstallServices(IServiceCollection services, IConfiguration config)
     {
-        services.AddScoped<IStockScraper, StockScraper>();
+        services.AddScoped<IStockApi, StockApi>();
+        services.AddScoped<ISlickChartsScraper, SlickChartsScraper>();
+        services.AddScoped<IYahooFinanceScraper, YahooFinanceScraper>();
         services.AddConfigurations(config.GetSection(nameof(StockScraperOptions)), new StockScraperOptions());
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
     }

@@ -13,6 +13,7 @@
     <PackageReference Include="OpenSearch.Client" Version="1.8.0" />
     <PackageReference Include="OpenSearch.Net" Version="1.8.0" />
     <PackageReference Include="FakeS3.AWS" Version="0.2.0" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.402.9" />
   </ItemGroup>
 
 </Project>

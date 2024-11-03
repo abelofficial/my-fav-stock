@@ -211,8 +211,9 @@ function App() {
                                             rel="noopener noreferrer"
                                         >
                                             {article.title}
-                                        </a>{" "}
-                                        - {article.source} ({})
+                                        </a>
+                                        <br />
+                                        {article.source}
                                     </li>
                                 ))
                             ) : (

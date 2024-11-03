@@ -1,13 +1,10 @@
 using System.Globalization;
+using Domain.models;
 
 namespace Domain.Entity;
 
 public class Stock
 {
-    public string Id
-    {
-        get => this.Name.Replace(" ", "-").Replace("(", "").Replace(")", "").ToLower() + "-" + CreatedAt.ToString("hh:mm:ss.ff", CultureInfo.InvariantCulture);
-    }
     public string Name
     {
         get; set;
@@ -26,6 +23,10 @@ public class Stock
         get; set;
     }
     public IndexStockDetail IndexDetail
+    {
+        get; set;
+    }
+    public List<NewsArticle> Articles
     {
         get; set;
     }
