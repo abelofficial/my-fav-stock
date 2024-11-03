@@ -5,7 +5,6 @@ import "./App.css";
 function App() {
     const indices = [
         { name: "S&P 500 ETF", id: "sp500" },
-        { name: "Nasdaq 100 ETF", id: "nasdaq100" },
         { name: "Dow Jones ETF", id: "dowjones" },
     ];
     const [selectedIndex, setSelectedIndex] = useState(null);
