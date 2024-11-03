@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Modal from "react-modal";
 import "./App.css";
+
+Modal.setAppElement("#root"); // Ensure accessibility compliance
 
 function App() {
     const indices = [
@@ -17,6 +20,7 @@ function App() {
         key: null,
         direction: "asc",
     });
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleIndexSelect = (symbol) => {
         setSelectedIndex(symbol);
@@ -39,12 +43,21 @@ function App() {
                 `https://wlzx6sn1y2.execute-api.eu-north-1.amazonaws.com/workstation/scrapStockValues/${symbol}`
             )
             .then((response) => {
-                setStockData(response.data.data?.result[0]);
+                const stockKey = Object.keys(response.data.data)[0];
+                const stockDetails = response.data.data[stockKey][0];
+                setStockData(stockDetails);
                 setSelectedCompany(symbol);
+                setIsModalOpen(true); // Open modal when data is fetched
             })
             .catch((error) => {
                 console.error("Error fetching stock data:", error);
             });
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setStockData(null);
+        setSelectedCompany(null);
     };
 
     const handleSort = (key) => {
@@ -74,6 +87,7 @@ function App() {
     );
     const totalPages = Math.ceil(companies.length / companiesPerPage);
 
+    console.log("currentCompanies: ", currentCompanies);
     const renderPaginationButtons = () => {
         const pages = [];
         if (totalPages <= 1) return null;
@@ -142,35 +156,72 @@ function App() {
                 ))}
             </select>
 
-            {stockData && selectedCompany && (
-                <div className="stock-details">
-                    <h3>Stock Details for {selectedCompany}</h3>
-                    <p>
-                        <strong>Volume:</strong> {stockData.optionDetail.volume}
-                    </p>
-                    <p>
-                        <strong>Average Volume:</strong>{" "}
-                        {stockData.optionDetail.avgVolume}
-                    </p>
-                    <p>
-                        <strong>Previous Close:</strong>{" "}
-                        {stockData.optionDetail.previousClose}
-                    </p>
-                    <p>
-                        <strong>Open:</strong> {stockData.optionDetail.open}
-                    </p>
-                    <p>
-                        <strong>Day Range:</strong>{" "}
-                        {stockData.optionDetail.dayRange.low} -{" "}
-                        {stockData.optionDetail.dayRange.high}
-                    </p>
-                    <p>
-                        <strong>52-Week Range:</strong>{" "}
-                        {stockData.optionDetail.rangeWeek52.low} -{" "}
-                        {stockData.optionDetail.rangeWeek52.high}
-                    </p>
-                </div>
-            )}
+            <Modal
+                isOpen={isModalOpen}
+                onRequestClose={handleCloseModal}
+                contentLabel="Stock Details"
+                className="modal"
+                overlayClassName="overlay"
+            >
+                {stockData && selectedCompany && (
+                    <div className="stock-details">
+                        <h3>Stock Details for {selectedCompany}</h3>
+                        <button
+                            onClick={handleCloseModal}
+                            className="close-button"
+                        >
+                            Close
+                        </button>
+                        <p>
+                            <strong>Volume: </strong>{" "}
+                            {stockData.optionDetail?.volume ?? "N/A"}
+                        </p>
+                        <p>
+                            <strong>Average Volume: </strong>{" "}
+                            {stockData.optionDetail?.avgVolume ?? "N/A"}
+                        </p>
+                        <p>
+                            <strong>Previous Close: </strong>{" "}
+                            {stockData.optionDetail?.previousClose ?? "N/A"}
+                        </p>
+                        <p>
+                            <strong>Open: </strong>{" "}
+                            {stockData.optionDetail?.open ?? "N/A"}
+                        </p>
+                        <p>
+                            <strong>Day Range: </strong>
+                            {stockData.optionDetail?.dayRange?.low ?? "N/A"} -
+                            {stockData.optionDetail?.dayRange?.high ?? "N/A"}
+                        </p>
+                        <p>
+                            <strong>52-Week Range: </strong>
+                            {stockData.optionDetail?.rangeWeek52?.low ??
+                                "N/A"}{" "}
+                            -
+                            {stockData.optionDetail?.rangeWeek52?.high ?? "N/A"}
+                        </p>
+                        <h4>Articles</h4>
+                        <ul>
+                            {stockData.articles?.length > 0 ? (
+                                stockData.articles.map((article, index) => (
+                                    <li key={index}>
+                                        <a
+                                            href={article.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {article.title}
+                                        </a>{" "}
+                                        - {article.source} ({})
+                                    </li>
+                                ))
+                            ) : (
+                                <li>No articles available</li>
+                            )}
+                        </ul>
+                    </div>
+                )}
+            </Modal>
 
             {selectedIndex && (
                 <>
