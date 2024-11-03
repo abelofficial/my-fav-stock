@@ -1,6 +1,6 @@
 .App {
     text-align: center;
-    padding: 2rem;
+    padding: 0.5rem;
 }
 
 .company-table {
@@ -67,6 +67,7 @@ button:hover {
     left: 50%;
     transform: translate(-50%, -50%);
     background: white;
+    max-height: 90vh;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -75,7 +76,6 @@ button:hover {
     animation: fadeIn 0.3s ease-in-out;
     z-index: 1000;
     overflow-y: auto;
-    padding: 1rem;
 }
 
 .overlay {
@@ -140,6 +140,7 @@ button:hover {
     }
 
     .modal {
+        max-height: 80vh;
         max-width: 95%;
         width: 95%;
         padding: 15px;
