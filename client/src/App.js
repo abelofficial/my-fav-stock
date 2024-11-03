@@ -7,7 +7,6 @@ function App() {
         { name: "S&P 500 ETF", id: "sp500" },
         { name: "Nasdaq 100 ETF", id: "nasdaq100" },
         { name: "Dow Jones ETF", id: "dowjones" },
-        { name: "Nasdaq Comp ETF", id: "nasdaq100" },
     ];
     const [selectedIndex, setSelectedIndex] = useState(null);
     const [companies, setCompanies] = useState([]);
