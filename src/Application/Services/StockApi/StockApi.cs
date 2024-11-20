@@ -1,4 +1,5 @@
 using System.Globalization;
+using Application.Services.StockApi;
 using Domain.models;
 using Domain.Models;
 using Newtonsoft.Json;
@@ -6,183 +7,23 @@ using Serilog;
 
 namespace Application.Services;
 
-public class PolygonApiResponse
-{
-    [JsonProperty("ticker")]
-    public string Ticker
-    {
-        get; set;
-    }
-
-    [JsonProperty("results")]
-    public List<PolygonApiResult> Results
-    {
-        get; set;
-    }
-}
-public class PolygonApiResult
-{
-    [JsonProperty("c")]
-    public decimal Close
-    {
-        get; set;
-    }
-
-    [JsonProperty("h")]
-    public decimal High
-    {
-        get; set;
-    }
-
-    [JsonProperty("l")]
-    public decimal Low
-    {
-        get; set;
-    }
-
-    [JsonProperty("o")]
-    public decimal Open
-    {
-        get; set;
-    }
-
-    [JsonProperty("v")]
-    public long Volume
-    {
-        get; set;
-    }
-
-    [JsonProperty("t")]
-    public long Timestamp
-    {
-        get; set;
-    }
-}
-
-public class PolygonStockApiResponse
-{
-    [JsonProperty("ticker")]
-    public string Ticker
-    {
-        get; set;
-    }
-
-    [JsonProperty("results")]
-    public List<PolygonStockResult> Results
-    {
-        get; set;
-    }
-}
-
-public class PolygonStockResult
-{
-    [JsonProperty("c")]
-    public decimal Close
-    {
-        get; set;
-    }
-
-    [JsonProperty("h")]
-    public decimal High
-    {
-        get; set;
-    }
-
-    [JsonProperty("l")]
-    public decimal Low
-    {
-        get; set;
-    }
-
-    [JsonProperty("o")]
-    public decimal Open
-    {
-        get; set;
-    }
-
-    [JsonProperty("v")]
-    public long Volume
-    {
-        get; set;
-    }
-
-    [JsonProperty("t")]
-    public long Timestamp
-    {
-        get; set;
-    }
-}
-
-public class PolygonNewsApiResponse
-{
-    [JsonProperty("results")]
-    public List<PolygonNewsArticle> Results
-    {
-        get; set;
-    }
-}
-
-public class PolygonNewsArticle
-{
-    [JsonProperty("title")]
-    public string Title
-    {
-        get; set;
-    }
-
-    [JsonProperty("author")]
-    public string Author
-    {
-        get; set;
-    }
-
-    [JsonProperty("published_utc")]
-    public DateTime PublishedUtc
-    {
-        get; set;
-    }
-
-    [JsonProperty("article_url")]
-    public string ArticleUrl
-    {
-        get; set;
-    }
-}
-
-public class FetchStockDataRequest
-{
-    public string Symbol
-    {
-        get; set;
-    } // Ticker symbol for the API request
-    public List<ScrapItem> ScrapItems
-    {
-        get; set;
-    }
-    public string Interval { get; set; } = "hour"; // Default interval
-    public int Multiplier { get; set; } = 1; // Default multiplier
-    public DateTime From { get; set; } = DateTime.UtcNow.AddHours(-24); // Default to 24 hours ago
-    public DateTime To { get; set; } = DateTime.UtcNow; // Default to current time
-}
-
 public interface IStockApi
 {
-    Task<ScrapedData> FetchStockDataAsync(FetchStockDataRequest request);
+    Task<ScrapedData> FetchStockDataAsync(Services.StockApi.FetchStockDataRequest request);
 }
 
-public class StockApi : IStockApi
+public class StockApiService : IStockApi
 {
     private readonly HttpClient _httpClient;
-    private const string ApiKey = "HcS_n902Hy9OKLIyLYbl6gLP9czOvw03"; // Replace with your actual API key
-    private const string StockDataUrl = "https://api.polygon.io/v2/aggs/ticker/{0}/range/{1}/{2}/{3}/{4}?adjusted=true&sort=asc&apiKey={5}";
-    private const string NewsUrl = "https://api.polygon.io/v2/reference/news?ticker={0}&apiKey={1}";
+    private StockApiOptions _options;
 
-    public StockApi()
+    public StockApiService(StockApiOptions options)
     {
+        _options = options;
         _httpClient = new HttpClient();
     }
 
-    public async Task<ScrapedData> FetchStockDataAsync(FetchStockDataRequest request)
+    public async Task<ScrapedData> FetchStockDataAsync(Services.StockApi.FetchStockDataRequest request)
     {
         try
         {
@@ -198,7 +39,7 @@ public class StockApi : IStockApi
             string to = request.To.ToString("yyyy-MM-dd");
 
             // Construct the API request URL for stock data
-            var stockDataUrl = string.Format(StockDataUrl, request.Symbol, request.Multiplier, request.Interval, from, to, ApiKey);
+            var stockDataUrl = string.Format(_options.StockDataUrl, request.Symbol, request.Multiplier, request.Interval, from, to, _options.ApiKey);
 
             // Send the request to the API
             var stockResponse = await _httpClient.GetAsync(stockDataUrl);
@@ -235,7 +76,7 @@ public class StockApi : IStockApi
             Log.Information("Fetching articles from stock api for symbol: {symbol}", symbol);
 
             // Construct the API request URL for news articles
-            var newsUrl = string.Format(NewsUrl, symbol, ApiKey);
+            var newsUrl = string.Format(_options.NewsUrl, symbol, _options.ApiKey);
 
             // Send the request to the API
             var newsResponse = await _httpClient.GetAsync(newsUrl);
